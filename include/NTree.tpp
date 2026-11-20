@@ -1,4 +1,4 @@
-template <typename T>
+template <Comparable T>
 NTree<T>::NTree(int n) 
     : root_(nullptr), size_(0), n_(n), childSelector_(nullptr) {
     if (n <= 0) {
@@ -6,13 +6,13 @@ NTree<T>::NTree(int n)
     }
 }
 
-template <typename T>
+template <Comparable T>
 NTree<T>::~NTree() {
     DestroyRecursive(root_);
     delete childSelector_;
 }
 
-template <typename T>
+template <Comparable T>
 void NTree<T>::DestroyRecursive(Node* node) {
     if (node) {
         for (int i = 0; i < node->n; ++i) {
@@ -22,7 +22,7 @@ void NTree<T>::DestroyRecursive(Node* node) {
     }
 }
 
-template <typename T>
+template <Comparable T>
 void NTree<T>::SetChildSelector(const IChildSelector<T>& selector) {
     if (size_ > 0) {
         throw InvalidArgumentException(
@@ -35,12 +35,12 @@ void NTree<T>::SetChildSelector(const IChildSelector<T>& selector) {
     childSelector_ = clone;
 }
 
-template <typename T>
+template <Comparable T>
 IChildSelector<T>* NTree<T>::GetChildSelector() const {
     return childSelector_;
 }
 
-template <typename T>
+template <Comparable T>
 void NTree<T>::Insert(const T& value) {
     if (childSelector_ == nullptr) {
         throw InvalidArgumentException("NTree", "Insert", "Cannot insert: child selector is not set");
@@ -48,12 +48,12 @@ void NTree<T>::Insert(const T& value) {
     InsertRecursive(root_, value);
 }
 
-template <typename T>
+template <Comparable T>
 void NTree<T>::Add(const T& value) {
     Insert(value);
 }
 
-template <typename T>
+template <Comparable T>
 void NTree<T>::Insert(const T& value, int childIndex) {
     if (childIndex < 0 || childIndex >= n_) {
         throw IndexOutOfRangeException("NTree", "Insert", "Invalid child index", childIndex, n_);
@@ -63,7 +63,7 @@ void NTree<T>::Insert(const T& value, int childIndex) {
     Insert(value, &path);
 }
 
-template <typename T>
+template <Comparable T>
 void NTree<T>::Insert(const T& value, Sequence<int>* path) {
     if (path == nullptr) {
         throw InvalidArgumentException("NTree", "Insert", "Path is null");
@@ -77,7 +77,7 @@ void NTree<T>::Insert(const T& value, Sequence<int>* path) {
     InsertExplicit(root_, value, path, 0);
 }
 
-template <typename T>
+template <Comparable T>
 void NTree<T>::InsertExplicit(Node*& node, const T& value, Sequence<int>* path, size_t pathPos) {
     if (!node) {
         node = new Node(value, n_);
@@ -92,7 +92,7 @@ void NTree<T>::InsertExplicit(Node*& node, const T& value, Sequence<int>* path, 
     InsertFirstFree(node, value);
 }
 
-template <typename T>
+template <Comparable T>
 void NTree<T>::InsertFirstFree(Node*& node, const T& value) {
     if (!node) {
         node = new Node(value, n_);
@@ -109,7 +109,7 @@ void NTree<T>::InsertFirstFree(Node*& node, const T& value) {
     InsertFirstFree(node->children[0], value);
 }
 
-template <typename T>
+template <Comparable T>
 void NTree<T>::InsertRecursive(Node*& node, const T& value) {
     if (!node) {
         node = new Node(value, n_);
@@ -134,7 +134,7 @@ void NTree<T>::InsertRecursive(Node*& node, const T& value) {
     InsertRecursive(node->children[childIndex], value);
 }
 
-template <typename T>
+template <Comparable T>
 void NTree<T>::Remove(const T& value) {
     if (childSelector_ == nullptr) {
         throw InvalidArgumentException("NTree", "Remove", "Cannot remove: child selector is not set");
@@ -144,7 +144,7 @@ void NTree<T>::Remove(const T& value) {
     }
 }
 
-template <typename T>
+template <Comparable T>
 bool NTree<T>::RemoveRecursive(Node*& node, const T& value) {
     if (!node) return false;
 
@@ -171,7 +171,7 @@ bool NTree<T>::RemoveRecursive(Node*& node, const T& value) {
     return false;
 }
 
-template <typename T>
+template <Comparable T>
 void NTree<T>::CollectValues(Node* node, MutableArraySequence<T>* result) const {
     if (!node) return;
     result->Append(node->data);
@@ -180,34 +180,34 @@ void NTree<T>::CollectValues(Node* node, MutableArraySequence<T>* result) const 
     }
 }
 
-template <typename T>
+template <Comparable T>
 void NTree<T>::Clear() {
     DestroyRecursive(root_);
     root_ = nullptr;
     size_ = 0;
 }
 
-template <typename T>
+template <Comparable T>
 int NTree<T>::GetSize() const {
     return static_cast<int>(size_);
 }
 
-template <typename T>
+template <Comparable T>
 bool NTree<T>::IsEmpty() const {
     return size_ == 0;
 }
 
-template <typename T>
+template <Comparable T>
 bool NTree<T>::Contains(const T& value) const {
     return Find(value) != nullptr;
 }
 
-template <typename T>
+template <Comparable T>
 IEnumerator<T>* NTree<T>::GetEnumerator() const {
     return new TreeEnumerator(root_, n_);
 }
 
-template <typename T>
+template <Comparable T>
 typename NTree<T>::Node* NTree<T>::Find(const T& value) const {
     auto findRec = [&](auto self, Node* n) -> Node* {
         if (!n) return nullptr;
@@ -221,7 +221,7 @@ typename NTree<T>::Node* NTree<T>::Find(const T& value) const {
     return findRec(findRec, root_);
 }
 
-template <typename T>
+template <Comparable T>
 void NTree<T>::TraverseByOrder(Node* node, Sequence<int>* order, 
                                 MutableArraySequence<T>* result) const {
     if (!node) return;
@@ -242,7 +242,7 @@ void NTree<T>::TraverseByOrder(Node* node, Sequence<int>* order,
     }
 }
 
-template <typename T>
+template <Comparable T>
 Sequence<T>* NTree<T>::GetSequence(Sequence<int>* order) const {
     if (order == nullptr) {
         throw InvalidArgumentException("NTree", "GetSequence", "Order sequence is null");
@@ -259,7 +259,7 @@ Sequence<T>* NTree<T>::GetSequence(Sequence<int>* order) const {
     return result;
 }
 
-template <typename T>
+template <Comparable T>
 Sequence<T>* NTree<T>::GetRange(const T& min, const T& max) const {
     if (min > max) {
         throw InvalidArgumentException("NTree", "GetRange", "min > max");
@@ -269,7 +269,7 @@ Sequence<T>* NTree<T>::GetRange(const T& min, const T& max) const {
     return result;
 }
 
-template <typename T>
+template <Comparable T>
 void NTree<T>::GetRangeRecursive(Node* node, const T& min, const T& max, 
                                   MutableArraySequence<T>* result) const {
     if (!node) return;
@@ -281,7 +281,7 @@ void NTree<T>::GetRangeRecursive(Node* node, const T& min, const T& max,
     }
 }
 
-template <typename T>
+template <Comparable T>
 bool NTree<T>::NodesEqual(const Node* a, const Node* b) {
     if (!a && !b) return true;
     if (!a || !b) return false;
@@ -305,23 +305,23 @@ std::ostream& operator<<(std::ostream& os, const NTree<U>& tree) {
     return os;
 }
 
-template <typename T>
+template <Comparable T>
 NTree<T>::Iterator::Iterator() {
     stack_ = new MutableArraySequence<Node*>();
 }
 
-template <typename T>
+template <Comparable T>
 NTree<T>::Iterator::Iterator(Node* root, int n) {
     stack_ = new MutableArraySequence<Node*>();
     if (root) stack_->Append(root);
 }
 
-template <typename T>
+template <Comparable T>
 NTree<T>::Iterator::~Iterator() {
     delete stack_;
 }
 
-template <typename T>
+template <Comparable T>
 NTree<T>::Iterator::Iterator(const Iterator& other) {
     stack_ = new MutableArraySequence<Node*>();
     for (size_t i = 0; i < other.stack_->GetLength(); ++i) {
@@ -329,7 +329,7 @@ NTree<T>::Iterator::Iterator(const Iterator& other) {
     }
 }
 
-template <typename T>
+template <Comparable T>
 typename NTree<T>::Iterator& NTree<T>::Iterator::operator=(const Iterator& other) {
     if (this != &other) {
         delete stack_;
@@ -341,7 +341,7 @@ typename NTree<T>::Iterator& NTree<T>::Iterator::operator=(const Iterator& other
     return *this;
 }
 
-template <typename T>
+template <Comparable T>
 T NTree<T>::Iterator::operator*() const {
     if (stack_->GetLength() == 0) {
         throw IndexOutOfRangeException("NTree::Iterator", "operator*", "Empty stack");
@@ -349,7 +349,7 @@ T NTree<T>::Iterator::operator*() const {
     return stack_->GetLast()->data;
 }
 
-template <typename T>
+template <Comparable T>
 typename NTree<T>::Iterator& NTree<T>::Iterator::operator++() {
     if (stack_->GetLength() == 0) {
         throw IndexOutOfRangeException("NTree::Iterator", "operator++", "Empty stack");
@@ -366,7 +366,7 @@ typename NTree<T>::Iterator& NTree<T>::Iterator::operator++() {
     return *this;
 }
 
-template <typename T>
+template <Comparable T>
 bool NTree<T>::Iterator::operator==(const Iterator& other) const {
     size_t len1 = stack_->GetLength();
     size_t len2 = other.stack_->GetLength();
@@ -377,17 +377,17 @@ bool NTree<T>::Iterator::operator==(const Iterator& other) const {
     return stack_->GetLast() == other.stack_->GetLast();
 }
 
-template <typename T>
+template <Comparable T>
 bool NTree<T>::Iterator::operator!=(const Iterator& other) const {
     return !(*this == other);
 }
 
-template <typename T>
+template <Comparable T>
 typename NTree<T>::Iterator NTree<T>::begin() const {
     return Iterator(root_, n_);
 }
 
-template <typename T>
+template <Comparable T>
 typename NTree<T>::Iterator NTree<T>::end() const {
     return Iterator(nullptr, n_);
 }

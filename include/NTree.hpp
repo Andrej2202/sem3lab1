@@ -6,8 +6,14 @@
 #include "base/Exceptions.hpp"
 #include "IChildSelector.hpp"
 #include "Interfaces.hpp"
+#include <concepts> 
 
 template <typename T>
+concept Comparable = requires(T a, T b) {
+    { a < b } -> std::convertible_to<bool>;
+};
+
+template <Comparable T> 
 class NTree : public ICollection<T> {
 private:
     struct Node {
